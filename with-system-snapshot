@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+set -o pipefail
+
+SNAP="$1"
+
+usage() {
+	echo "Usage: $0 [SNAP] -- [command]" 
+	exit 1
+}
+
+prepare_snapshot() {
+  if ! btrfs subvolume show "/.snapshots/$SNAP" > /dev/null 2>&1; then
+    btrfs subvolume snapshot / "/.snapshots/$SNAP"
+  fi
+
+  if ! btrfs subvolume show "/.snapshots/$SNAP/home" > /dev/null 2>&1; then
+    rmdir "/.snapshots/$SNAP/home"
+    btrfs subvolume snapshot /home "/.snapshots/$SNAP"
+  fi
+}
+
+cleanup_snapshot() {
+  btrfs subvolume delete "/.snapshots/$SNAP/home"
+  btrfs subvolume delete "/.snapshots/$SNAP"
+}
+
+prevent_snapshot_root_deletion() {
+  NAME=$(btrfs sub show "/.snapshots/$SNAP" 2> /dev/null | head -n 1)
+  if [[ "$NAME" == *snapshots ]]; then
+    echo "Illegal call prevented (targeted snapshots root)" 1>&2
+    exit 1
+  fi
+}
+
+if [ -z "$SNAP" ]; then
+	usage
+fi
+
+if [[ "$2" != "--" ]]; then
+  usage
+fi
+
+prevent_snapshot_root_deletion
+prepare_snapshot
+
+shift 2
+"$@"
+EXIT_CODE=$?
+
+cleanup_snapshot
+
+exit $EXIT_CODE

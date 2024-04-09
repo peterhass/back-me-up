@@ -1,0 +1,23 @@
+
+[Unit]
+Description=pins2 Backup: Maintenance
+Wants=network-online.target
+After=network-online.target
+
+# TODO: switch to use template unit files and always
+#   have one backup-service,
+#   one backup-timer,
+#   one maintenance-service,
+#   one maintenance-timer
+
+[Service]
+Type=simple
+EnvironmentFile=/etc/pins2-backup/system
+ExecStart=/usr/bin/systemd-inhibit \
+  --who="pins2 Backup" \
+  --why="pins2 backup cleaning" \
+  /usr/local/bin/pins2-backup clean system /
+ExecStart=/usr/bin/systemd-inhibit \
+  --who="pins2 Backup" \
+  --why="pins2 backup cleaning" \
+  /usr/local/bin/pins2-backup clean home /home/

@@ -1,0 +1,59 @@
+#!/usr/bin/env bash
+set -e
+
+usage() {
+  echo "Usage: $0 <command> [NAME] [PATH]"
+  echo "Commands: archive | clean"
+  echo "Expects BORG_REPO env variable to be set"
+  exit 1
+}
+
+COMMAND="$1"
+NAME="$2"
+SOURCE_PATH="$3"
+
+if [ -z "$SOURCE_PATH" ]; then
+  usage
+fi
+
+if [ -z "$NAME" ]; then
+  usage
+fi
+
+if [ -z "$BORG_REPO" ]; then
+	usage
+fi
+
+case "$COMMAND" in
+  archive)
+    SNAP="system-$(date +%Y-%m-%d)"
+    
+    /usr/local/bin/with-system-snapshot "$SNAP" -- /usr/bin/borg create \
+      --verbose \
+      --stat \
+      --progress \
+      --list \
+      --compression zlib \
+      --max-lock-wait 86400 \
+      "${BORG_REPO}"::"$NAME"-{now} \
+      "/.snapshots/$SNAP/$SOURCE_PATH"
+    ;;
+  clean)
+    echo "Pruning ..."
+    /usr/bin/borg prune \
+      --list \
+      --glob-archives "$NAME"- \
+      --show-rc \
+      --keep-daily 1 \
+      --keep-weekly 1 \
+      --keep-monthly 1
+
+    echo "Compacting ..."
+    /usr/bin/borg compact \
+      --progress \
+      "${BORG_REPO}"
+    ;;
+  *) usage ;;
+esac
+
+

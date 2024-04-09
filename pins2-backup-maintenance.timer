@@ -1,0 +1,14 @@
+
+[Unit]
+Description=pins2 Backup: System Timer
+Requires=pins2-backup-maintenance.service
+
+[Timer]
+OnCalendar=*-*-* 12:00
+Unit=pins2-backup-maintenance.service
+WakeSystem=true
+Persistent=false
+
+[Install]
+WantedBy=timers.target
+

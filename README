@@ -1,0 +1,13 @@
+# Backup jobs
+
+Borg + btrfs + systemd = <3
+
+## Setup
+
+```bash
+make install 
+vim /etc/pins2-backup/system # configure repo
+vim /etc/pins2-backup/home # configure repo
+make enable
+```
+
