@@ -11,3 +11,8 @@ vim /etc/pins2-backup/home # configure repo
 make enable
 ```
 
+## Update existing setup
+
+```bash
+make install
+```
