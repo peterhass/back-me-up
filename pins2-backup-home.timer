@@ -3,7 +3,7 @@ Description=pins2 Backup: Home Timer
 Requires=pins2-backup-home.service
 
 [Timer]
-OnCalendar=*-*-* 02:00
+OnCalendar=Tue..Sun *-* 02:00
 Unit=pins2-backup-home.service
 WakeSystem=true
 Persistent=false

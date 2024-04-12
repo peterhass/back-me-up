@@ -11,7 +11,7 @@ After=network-online.target
 #   one maintenance-timer
 
 [Service]
-Type=simple
+Type=oneshot
 EnvironmentFile=/etc/pins2-backup/system
 ExecStart=/usr/bin/systemd-inhibit \
   --who="pins2 Backup" \
