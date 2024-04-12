@@ -5,7 +5,7 @@ After=network-online.target
 
 [Service]
 Type=simple
-EnvironmentFile=/etc/pins2-backup/system
+EnvironmentFile=/etc/pins2-backup
 ExecStart=/usr/bin/systemd-inhibit \
   --who="pins2 Backup" \
   --why="pins2 backup syncing" \

@@ -1,7 +1,6 @@
 install: 
-	mkdir -p /etc/pins2-backup/
-	cp -n ./pins2-backup.env /etc/pins2-backup/system || true
-	cp -n ./pins2-backup.env /etc/pins2-backup/home || true
+	cp -n ./pins2-backup.env /etc/pins2-backup || true
+	chmod 640 /etc/pins2-backup
 
 	cp ./with-system-snapshot /usr/local/bin/with-system-snapshot
 	cp ./pins2-backup /usr/local/bin/pins2-backup

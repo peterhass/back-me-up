@@ -6,8 +6,7 @@ Borg + btrfs + systemd = <3
 
 ```bash
 make install 
-vim /etc/pins2-backup/system # configure repo
-vim /etc/pins2-backup/home # configure repo
+vim /etc/pins2-backup # configure repo
 make enable
 ```
 
