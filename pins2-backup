@@ -32,9 +32,8 @@ case "$COMMAND" in
       --verbose \
       --stat \
       --progress \
-      --list \
       --compression zlib \
-      --max-lock-wait 86400 \
+      --lock-wait 86400 \
       "${BORG_REPO}"::"$NAME"-{now} \
       "/.snapshots/$SNAP/$SOURCE_PATH"
     ;;
