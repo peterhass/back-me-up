@@ -11,17 +11,23 @@ usage() {
 prepare_snapshot() {
   if ! btrfs subvolume show "/.snapshots/$SNAP" > /dev/null 2>&1; then
     btrfs subvolume snapshot / "/.snapshots/$SNAP"
+    SNAPSHOTTED_ROOT=true
   fi
 
   if ! btrfs subvolume show "/.snapshots/$SNAP/home" > /dev/null 2>&1; then
     rmdir "/.snapshots/$SNAP/home"
     btrfs subvolume snapshot /home "/.snapshots/$SNAP"
+    SNAPSHOTTED_HOME=true
   fi
 }
 
 cleanup_snapshot() {
-  btrfs subvolume delete "/.snapshots/$SNAP/home"
-  btrfs subvolume delete "/.snapshots/$SNAP"
+  if [ "$SNAPSHOTTED_ROOT" = true ]; then
+     btrfs subvolume delete "/.snapshots/$SNAP/home"
+  fi
+  if [ "$SNAPSHOTTED_HOME" = true ]; then
+     btrfs subvolume delete "/.snapshots/$SNAP"
+  fi
 }
 
 prevent_snapshot_root_deletion() {
