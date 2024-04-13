@@ -3,6 +3,7 @@ install:
 	chmod 640 /etc/pins2-backup
 
 	cp ./with-system-snapshot /usr/local/bin/with-system-snapshot
+	cp ./blocking-systemd-inhibit /usr/local/bin/blocking-systemd-inhibit
 	cp ./pins2-backup /usr/local/bin/pins2-backup
 
 	cp ./pins2-backup-maintenance.service /etc/systemd/system/

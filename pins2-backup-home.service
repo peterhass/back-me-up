@@ -6,7 +6,7 @@ After=network-online.target
 [Service]
 Type=simple
 EnvironmentFile=/etc/pins2-backup
-ExecStart=/usr/bin/systemd-inhibit \
+ExecStart=/usr/local/bin/blocking-systemd-inhibit \
   --who="pins2 Backup: Home" \
   --why="pins2 home backup syncing" \
-  /usr/local/bin/pins2-backup archive home /home/
+  -- /usr/local/bin/pins2-backup archive home /home/

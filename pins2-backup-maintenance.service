@@ -7,11 +7,11 @@ After=network-online.target
 [Service]
 Type=oneshot
 EnvironmentFile=/etc/pins2-backup
-ExecStart=/usr/bin/systemd-inhibit \
+ExecStart=/usr/local/bin/blocking-systemd-inhibit \
   --who="pins2 Backup" \
   --why="pins2 backup cleaning" \
-  /usr/local/bin/pins2-backup clean system /
-ExecStart=/usr/bin/systemd-inhibit \
+  -- /usr/local/bin/pins2-backup clean system /
+ExecStart=/usr/local/bin/blocking-systemd-inhibit \
   --who="pins2 Backup" \
   --why="pins2 backup cleaning" \
-  /usr/local/bin/pins2-backup clean home /home/
+  -- /usr/local/bin/pins2-backup clean home /home/
