@@ -1,12 +1,20 @@
 [Unit]
 Description=pins2 Backup: System
-Wants=network-online.target
+Requires=network-online.target
 After=network-online.target
+
+StartLimitBurst=5
+StartLimitIntervalSec=300
 
 [Service]
 Type=simple
+
+Restart=on-failure
+RestartSec=60s
+
 EnvironmentFile=/etc/pins2-backup
 ExecStart=/usr/local/bin/blocking-systemd-inhibit \
   --who="pins2 Backup" \
   --why="pins2 backup syncing" \
+  --what=sleep \
   -- /usr/local/bin/pins2-backup archive system /
