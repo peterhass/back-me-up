@@ -4,8 +4,15 @@ Description=pins2 Backup: Maintenance
 Requires=network-online.target
 After=network-online.target
 
+StartLimitBurst=5
+StartLimitIntervalSec=300
+
 [Service]
 Type=oneshot
+
+Restart=on-failure
+RestartSec=60s
+
 EnvironmentFile=/etc/pins2-backup
 ExecStart=/usr/local/bin/blocking-systemd-inhibit \
   --who="pins2 Backup" \
