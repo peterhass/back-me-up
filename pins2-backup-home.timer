@@ -1,6 +1,5 @@
 [Unit]
 Description=pins2 Backup: Home Timer
-Requires=pins2-backup-home.service
 
 [Timer]
 OnCalendar=Tue..Sun *-* 02:00
