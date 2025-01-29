@@ -27,3 +27,13 @@ make install
 	- target: change /boot/grub.cfg to use subvol=@/backup-2024-07-11 as root
 	- target: change /boot/grub.cfg to use backup hdd uuid
 	- target: clean up yesterdays snapshot
+	- maybe change `with-system-snapshot` to keep track of 'locks' to prevent one concurrent `with-system-snapshot` calls to interfer with one another
+		- keep track of it in a file? 
+		```
+		# /tmp/with-system-snapshot.locks
+		# PID
+		123123
+		31231
+		```
+
+		when last one is removed, we remove the snapshot
