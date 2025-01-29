@@ -1,0 +1,91 @@
+#!/usr/bin/env bash
+#####################
+###### W I P ########
+#####################
+
+set -e 
+
+SUBVOLUMES=(
+	'@'
+	'@home'
+)
+
+usage() {
+	echo "Usage: $0 <command>"
+	
+	exit 1
+}
+
+healthcheck() {
+	# TODO: check if all SUBVOLUMES exist on source (and target?)
+}
+
+patch_to_make_it_bootable() {
+	SUBVOL="$1"
+
+	if [[ "$SUBVOl" -neq "@" ]]
+	then
+		echo "No need to patch $SUBVOL"
+		exit 0
+	fi
+
+	# get UUID of target part
+	UUID="d59ce62d-ade3-40b0-9bb1-fbccb3e0ed19"
+
+	# patch crypt setup to reference target UUID
+	## patch /etc/default/grub
+	## patch /etc/crypttab
+	## patch /etc/fstab (maybe just create a new one?)
+
+	# chroot into target
+	manjaro_chroot $TARGET/@
+
+	install-grub
+}
+
+COMMAND="$1"
+
+# https://bbs.archlinux.org/viewtopic.php?id=289199
+
+case "$COMMAND" in
+	init)
+
+		;;
+	backup)
+		## source always needs previous-day snapshot!
+		## source creates recent snapshot (readonly)
+		PREVIOUS_SNAPNAME="bootable-2024-07-18_1422"
+		SNAPNAME="bootable-2024-07-19_1422"
+
+		# TODO: how to get PREVIOUS_SNAPNAME
+		#		btrfs subvol list $SOURCE/$SUBVOL
+		#		filter for 'bootable-'
+		#		(eg. 'bootable-2024-07-19_1422') sort list desc
+		# 	take head -n -1
+		# extra points: security check: date is not in the future
+		for SUBVOL in "${SUBVOLUMES[@]}"
+		do
+			# TDOO: ESCAPE STRINGS!!!
+			# source: create snapshot to transfer later
+			btrfs sub snap -r $SOURCE/$SUBVOL $SOURCE/$SUBVOL/.snapshots/$SNAPNAME
+
+			# incrementally transfer snapshot to target
+			btrfs send \
+				-p $SOURCE/$SUBVOL/.snapshots/$PREVIOUS_SNAPNAME \
+				$SOURCE/$SUBVOL/.snapshots/$SNAPNAME \
+				| btrfs receive $TARGET/$SUBVOL-originals
+
+			# create writeable subvol on target
+			btrfs sub snap $TARGET/$SUBVOL-originals/$SNAPNAME \
+				$TARGET/$SUBVOL-staged
+
+			# patch $TARGET/$SUBVOL-staged to have a bootable system
+
+			patch_to_make_it_bootable $TARGET/$SUBVOL-staged
+
+			# commit changes
+			mv $TARGET/$SUBVOL $TARGET/$SUBVOL-old
+			mv $TARGET/$SUBVOL-staged $TARGET/$SUBVOL 
+		done
+		;;
+esac

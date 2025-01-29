@@ -15,3 +15,15 @@ make enable
 ```bash
 make install
 ```
+
+## Ideas
+
+- Create daily bootable backup to internal HDD
+	- systemd-unit bootable-backup.service, bootable-backup.timer
+	- Init disk with same subvolumes
+	- btrfs send receive all subvolumes
+		target: @blubb/backup-2024-07-11
+	- target: adjust /etc/fstab change subvol= mountpoints with @bla/backup-2024-07-11 subvols
+	- target: change /boot/grub.cfg to use subvol=@/backup-2024-07-11 as root
+	- target: change /boot/grub.cfg to use backup hdd uuid
+	- target: clean up yesterdays snapshot
