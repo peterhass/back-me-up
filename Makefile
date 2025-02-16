@@ -17,3 +17,4 @@ enable:
 	systemctl enable --now pins2-backup-maintenance.timer
 	systemctl enable --now pins2-backup-system.timer
 	systemctl enable --now pins2-backup-home.timer
+	install --mode=0644 logind.conf /etc/systemd/logind.conf.d/10-suspend-on-idle.pins2-backup.conf
