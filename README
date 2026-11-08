@@ -16,6 +16,40 @@ make enable
 make install
 ```
 
+## Limit Borg memory on the backup target
+
+The target needs systemd, cgroup v2 memory control, `/usr/bin/borg`, and
+`/usr/bin/systemd-run`. Replace `supersau` and the host name below with yours.
+
+1. On the **target**, run as root from this repository's directory:
+
+   ```bash
+   install -o root -g root -m 0755 borg-limited /usr/local/bin/borg-limited
+   loginctl enable-linger supersau
+   ```
+
+2. On the **source**, run `make install` to update the systemd services.
+   They set `BORG_REMOTE_PATH=/usr/local/bin/borg-limited` for create,
+   prune, and compact. The path points to the **target**, not the source.
+
+3. Test from the source:
+
+   ```bash
+   ssh supersau@pins2.home '/usr/local/bin/borg-limited --version'
+   # To test the same remote path as the services, with repo credentials set:
+   BORG_REMOTE_PATH=/usr/local/bin/borg-limited borg list "$BORG_REPO"
+   ```
+
+The wrapper limits each remote Borg process to 3 GB RAM and no swap. It does
+not limit Borg on the source or other target processes. Parallel backups can
+still use too much RAM; Borg may fail if it reaches the limit. To stop *all*
+target swapping, also disable swap and zram on the target, including at boot.
+While a backup runs, find its transient unit with
+`systemctl --user list-units 'borg-limited-*'` on the target as the repo user.
+
+If SSH has a forced `borg serve` command, it may ignore `BORG_REMOTE_PATH`.
+Update that command to use the wrapper without removing its restrictions.
+
 ## Ideas
 
 - Create daily bootable backup to internal HDD

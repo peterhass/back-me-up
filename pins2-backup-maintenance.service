@@ -14,6 +14,7 @@ Restart=on-failure
 RestartSec=60s
 
 EnvironmentFile=/etc/pins2-backup
+Environment=BORG_REMOTE_PATH=/usr/local/bin/borg-limited
 ExecStart=/usr/local/bin/blocking-systemd-inhibit \
   --who="pins2 Backup" \
   --why="pins2 backup cleaning" \
