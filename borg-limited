@@ -1,15 +1,11 @@
 #!/bin/sh
-# Run the remote Borg server in a memory-limited transient user service.
-set -eu
-
-XDG_RUNTIME_DIR="/run/user/$(id -u)"
-DBUS_SESSION_BUS_ADDRESS="unix:path=$XDG_RUNTIME_DIR/bus"
-export XDG_RUNTIME_DIR DBUS_SESSION_BUS_ADDRESS
+export XDG_RUNTIME_DIR="/run/user/$(id -u)"
+export DBUS_SESSION_BUS_ADDRESS="unix:path=$XDG_RUNTIME_DIR/bus"
 
 exec /usr/bin/systemd-run \
   --user --quiet --pipe --wait --collect \
   --unit="borg-limited-$$-$(date +%s%N)" \
-  --property=MemoryHigh=2500M \
-  --property=MemoryMax=3G \
-  --property=MemorySwapMax=0 \
+  --property=MemoryHigh=3000M \
+  --property=MemoryMax=3500M \
+  --property=MemorySwapMax=1G \
   /usr/bin/borg "$@"

@@ -40,12 +40,53 @@ The target needs systemd, cgroup v2 memory control, `/usr/bin/borg`, and
    BORG_REMOTE_PATH=/usr/local/bin/borg-limited borg list "$BORG_REPO"
    ```
 
-The wrapper limits each remote Borg process to 3 GB RAM and no swap. It does
-not limit Borg on the source or other target processes. Parallel backups can
-still use too much RAM; Borg may fail if it reaches the limit. To stop *all*
-target swapping, also disable swap and zram on the target, including at boot.
-While a backup runs, find its transient unit with
-`systemctl --user list-units 'borg-limited-*'` on the target as the repo user.
+The wrapper slows each remote Borg process down above 3000M RAM
+(`MemoryHigh`), kills it at 3500M (`MemoryMax`) and allows up to 1G of swap.
+It does not limit Borg on the source or other target processes. Parallel
+backups can still use too much RAM; Borg may fail if it reaches the limit.
+While a backup runs, find its transient unit on the target as root with
+`systemctl --user -M supersau@ list-units 'borg-limited-*'`. Without
+`-M supersau@`, root only sees its own user units, and the list is empty.
+
+### Known problem: limit too low stalls prune
+
+`borg prune` and `borg compact` on the system repo need about 3 GB on the
+target. With the earlier limits (`MemoryHigh=2500M`, `MemoryMax=3G`,
+`MemorySwapMax=256M`) a prune hit the limits. It was not killed: it used all
+its swap and hung in state `D` for about 19 hours, holding the repo lock.
+`systemctl --user -M supersau@ status borg-limited-…` showed
+`available: 0B` and `swap: 256M` (the full swap limit). The 3000M/3500M limits
+above were raised because of this. If prune or compact gets slow again, check
+that status line first. Raise the limits if memory sits at `high` with no
+memory available.
+
+### Known problem: orphaned remote Borg keeps the lock
+
+When the source service is stopped or the SSH connection drops,
+`systemd-run --wait` does not stop its transient unit. A Borg process that is
+stuck (for example, slowed down by the memory limits) keeps running on the
+target and holds the lock. New runs then fail with
+`Failed to create/acquire the lock …/lock.exclusive (timeout)`.
+
+To recover:
+
+1. On the target as root, look for leftover units and stop them:
+
+   ```bash
+   systemctl --user -M supersau@ list-units 'borg-limited-*'
+   systemctl --user -M supersau@ stop borg-limited-<…>
+   ps -eo pid,etime,stat,args | grep '[b]org'   # must print nothing
+   ```
+
+2. If `lock.exclusive` or `lock.roster` still exists in the repo, break the
+   stale lock from the source:
+
+   ```bash
+   sudo sh -c 'set -a; . /etc/pins2-backup; BORG_REMOTE_PATH=/usr/local/bin/borg-limited borg break-lock "$BORG_REPO"'
+   ```
+
+3. If a system backup was stopped, delete its leftover
+   `/.snapshots/system-<date>` subvolumes on the source.
 
 If SSH has a forced `borg serve` command, it may ignore `BORG_REMOTE_PATH`.
 Update that command to use the wrapper without removing its restrictions.
